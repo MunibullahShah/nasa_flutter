@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nasa_flutter/modules/home/view/home_view.dart';
+import 'package:nasa_flutter/constants/endpoints.dart';
 
-import '../../constants/endpoints.dart';
-import '../../modules/login/model/login_model.dart';
-import 'backend_calls.dart';
+import 'package:nasa_flutter/modules/home/view/home_view.dart';
+import 'package:nasa_flutter/modules/login/model/login_model.dart';
+import 'package:nasa_flutter/utils/network/backend_calls.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 class BackendRepository {
   createUser(LoginModel user) async {
@@ -20,14 +23,60 @@ class BackendRepository {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
+        showSimpleNotification(
+          const Text('The password provided is too weak.'),
+          background: Colors.red,
+          position: NotificationPosition.bottom,
+        );
       } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
+        showSimpleNotification(
+          const Text('The account already exists for that email.'),
+          background: Colors.red,
+          position: NotificationPosition.bottom,
+        );
       } else {
-        print(e.message);
+        if (kDebugMode) {
+          print(e.message);
+        }
       }
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
+
+  login(LoginModel user) async {
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: user.email ?? "",
+        password: user.password ?? "",
+      );
+      if (credential.user?.email != null) {
+        Get.offAll(() => HomeView());
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        showSimpleNotification(
+          const Text('No user found for that email.'),
+          background: Colors.red,
+          position: NotificationPosition.bottom,
+        );
+      } else if (e.code == 'wrong-password') {
+        showSimpleNotification(
+          const Text('Wrong password provided for that user.'),
+          background: Colors.red,
+          position: NotificationPosition.bottom,
+        );
+      } else {
+        if (kDebugMode) {
+          print(e.message);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
@@ -101,45 +150,6 @@ class BackendRepository {
       return jsonDecode(response);
     } catch (e) {
       throw ("Error pausing Campaign");
-    }
-  }
-
-  login(LoginModel user) async {
-    try {
-      String response = await BackendCall().postRequest(
-        endpoint: loginEndpoint,
-        body: user.toJson(),
-        tokenRequired: false,
-      );
-      return response;
-    } catch (e) {
-      throw ("Error Login");
-    }
-  }
-
-  getDropdownStatus({required String status}) async {
-    try {
-      String response = await BackendCall().getRequest(
-        endpoint: callStatusEndpoint,
-        body: {},
-        parameters: "type=$status",
-      );
-      return response;
-    } catch (e) {
-      throw ("Error pausing Campaign");
-    }
-  }
-
-  Future<String> getTimeline({required String campaignNoId}) async {
-    try {
-      String response = await BackendCall().getRequest(
-        endpoint: timelineEndpoint,
-        body: {},
-        parameters: "campaign_number_id=$campaignNoId",
-      );
-      return response;
-    } catch (e) {
-      rethrow;
     }
   }
 }

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:nasa_flutter/config/config.dart';
 import 'package:nasa_flutter/firebase_options.dart';
-import 'package:nasa_flutter/modules/registration/view/registration_view.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 import 'modules/login/view/login_view.dart';
 
@@ -17,7 +17,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return OverlaySupport.global(
+        child: GetMaterialApp(
       onInit: () async {
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme().appDarkTheme,
       themeMode: ThemeMode.system,
       home: LoginView(),
-    );
+    ));
   }
 }
 

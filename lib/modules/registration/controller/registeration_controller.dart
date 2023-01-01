@@ -29,7 +29,7 @@ class RegistrationController extends GetxController {
   }
 
   register() async {
-    // Get.dialog(const Loader(), barrierDismissible: false);
+    Get.dialog(const Loader(), barrierDismissible: false);
     isLoading.value = true;
     try {
       LoginModel user = LoginModel(

@@ -26,7 +26,7 @@ class LoginController extends GetxController {
     isLoading.value = true;
     try {
       LoginModel user = LoginModel(
-          username: emailController.text.trim(),
+          email: emailController.text.trim(),
           password: passwordController.text);
       user = await LoginRepository().login(user);
       // Get.offAll(() => CampaignsView());
